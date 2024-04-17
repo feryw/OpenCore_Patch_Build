@@ -52,7 +52,7 @@ jobs:
           src=$(/usr/bin/curl -LfsS https://raw.githubusercontent.com/acidanthera/ocbuild/master/ci-bootstrap.sh) && eval "$src" || exit 1
 
           # jq parses json, # token https://docs.github.com/en/developers/apps/building-oauth-apps/authorizing-oauth-apps  
-          latesttag=$(curl -H "Authorization: token ${{ secrets.GITHUB_TOKEN }}" -sL https://api.github.com/repos/${GITHUB_REPOSITORY}/releases/latest | jq -r .tag_name)
+          latesttag=$(curl -H "Authorization: token ${{ secrets.GITHUB_TOKEN_OC }}" -sL https://api.github.com/repos/${GITHUB_REPOSITORY}/releases/latest | jq -r .tag_name)
           latestgit=${latesttag#*_}
           currenttag=$(grep OPEN_CORE_VERSION Include/Acidanthera/Library/OcMainLib.h | sed 's/.*"\(.*\)".*/\1/' | grep -E '^[0-9.]+$')_$(git rev-parse --short HEAD)
           currentgit=${currenttag#*_}
@@ -104,7 +104,7 @@ jobs:
       - name: Commit and Push
         if: env.isNew == 'true'
         env:
-          GITHUB_TOKEN: ${{ secrets.GITHUB_TOKEN }}        
+          GITHUB_TOKEN: ${{ secrets.GITHUB_TOKEN_OC }}        
         run: |
           echo ${{ env.currenttag }} > latest
           git add latest
@@ -115,7 +115,7 @@ jobs:
         if: env.isNew == 'true'
         uses: softprops/action-gh-release@v2
         env:
-          GITHUB_TOKEN: ${{ secrets.GITHUB_TOKEN }}
+          GITHUB_TOKEN: ${{ secrets.GITHUB_TOKEN_OC }}
         with:
           tag_name: ${{ env.currenttag }}
           body: |
