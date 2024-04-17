@@ -103,6 +103,8 @@ jobs:
 
       - name: Commit and Push
         if: env.isNew == 'true'
+        env:
+          GITHUB_TOKEN: ${{ secrets.GITHUB_TOKEN }}        
         run: |
           echo ${{ env.currenttag }} > latest
           git add latest
