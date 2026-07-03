@@ -1,10 +1,28 @@
+#
+# Copyright (C) 2026 Pembersihan Otomatis
+# Perbaikan menggunakan filter status 'failure' yang valid untuk GitHub CLI
+#
+
+name: Clean Failed Runs
+
+on:
+  workflow_dispatch: # Mengaktifkan tombol manual "Run workflow" di halaman web GitHub Actions
+
+jobs:
+  clean-failed:
+    name: Hapus Workflow Gagal
+    runs-on: ubuntu-latest
+    permissions:
+      actions: write # Wajib diisi agar GitHub Token memiliki izin untuk menghapus data log
+    
+    steps:
       - name: Ambil dan Hapus Log Gagal
         env:
           GH_TOKEN: ${{ secrets.GITHUB_TOKEN }}
         run: |
           echo "Memulai pencarian alur kerja yang gagal..."
           
-          # Mengubah --status failed menjadi --status failure
+          # Menggunakan filter --status failure (sesuai aturan resmi gh cli)
           RUNS=$(gh run list --repo "${{ github.repository }}" --status failure --limit 100 --json databaseId --jq '.[].databaseId')
           
           if [ -z "$RUNS" ]; then
