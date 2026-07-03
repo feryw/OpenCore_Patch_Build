@@ -1,0 +1,43 @@
+#
+# Copyright (C) 2026 Pembersihan Otomatis
+# Perbaikan untuk menghapus seluruh riwayat run yang gagal secara massal
+#
+
+name: Clean Failed Runs
+
+on:
+  workflow_dispatch: # Mengaktifkan tombol manual "Run workflow" di halaman web GitHub Actions
+
+jobs:
+  clean-failed:
+    name: Hapus Workflow Gagal
+    runs-on: ubuntu-latest
+    permissions:
+      actions: write # Wajib diisi agar GitHub Token memiliki izin untuk menghapus data log
+    
+    steps:
+      - name: Ambil dan Hapus Log Gagal
+        env:
+          GH_TOKEN: ${{ secrets.GITHUB_TOKEN }}
+        run: |
+          echo "Memulai pencarian alur kerja yang gagal..."
+          
+          # Mengambil daftar ID run yang gagal (dibatasi 100 run per eksekusi)
+          RUNS=$(gh run list --repo "${{ github.repository }}" --status failed --limit 100 --json databaseId --jq '.[].databaseId')
+          
+          if [ -z "$RUNS" ]; then
+            echo "✅ Tidak ada alur kerja berstatus gagal yang ditemukan."
+            exit 0
+          fi
+
+          echo "Daftar ID yang akan dihapus:"
+          echo "$RUNS"
+          echo "-----------------------------------"
+
+          # Melakukan perulangan untuk menghapus setiap ID secara bergantian
+          for RUN_ID in $RUNS; do
+            echo "🔄 Menghapus Run ID: $RUN_ID"
+            gh run delete "$RUN_ID" --repo "${{ github.repository }}"
+          done
+          
+          echo "🎉 Proses pembersihan selesai!"
